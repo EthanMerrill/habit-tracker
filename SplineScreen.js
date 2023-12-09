@@ -3,13 +3,11 @@ import { StyleSheet, View, PanResponder, Animated } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 
 const SplineScreen = () => {
-  const [points, setPoints] = useState([
-    { x: 20, y: 150 },
-    { x: 200, y: 50 },
-    { x: 350, y: 150 },
-  ]);
+  const [pointValues] = useState(
+    Array.from({ length: 3 }, () => new Animated.ValueXY({ x: 0, y: 0 }))
+  );
 
-  const panResponderArray = points.map((_, index) =>
+  const panResponderArray = pointValues.map((pointValue, index) =>
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
@@ -17,24 +15,8 @@ const SplineScreen = () => {
         [
           null,
           {
-            moveX: (gesture) => {
-              // Update the position of the dragged point
-              const updatedPoints = [...points];
-              updatedPoints[index] = {
-                x: gesture,
-                y: points[index].y,
-              };
-              setPoints(updatedPoints);
-            },
-            moveY: (gesture) => {
-              // Update the position of the dragged point
-              const updatedPoints = [...points];
-              updatedPoints[index] = {
-                x: points[index].x,
-                y: gesture,
-              };
-              setPoints(updatedPoints);
-            },
+            dx: pointValue.x,
+            dy: pointValue.y,
           },
         ],
         { useNativeDriver: false }
@@ -43,7 +25,7 @@ const SplineScreen = () => {
   );
 
   const renderPoints = () => {
-    return points.map((point, index) => (
+    return pointValues.map((pointValue, index) => (
       <Animated.View
         key={index}
         {...panResponderArray[index].panHandlers}
@@ -51,21 +33,25 @@ const SplineScreen = () => {
           styles.point,
           {
             transform: [
-              { translateX: point.x - 10 },
-              { translateY: point.y - 10 },
+              { translateX: pointValue.x },
+              { translateY: pointValue.y },
             ],
           },
         ]}
-      >
-        <Circle cx={10} cy={10} r={10} fill="blue" />
-      </Animated.View>
+      />
     ));
   };
 
   const interpolateSpline = (t) => {
     // Simple linear interpolation for demonstration
-    const x = (1 - t) ** 2 * points[0].x + 2 * (1 - t) * t * points[1].x + t ** 2 * points[2].x;
-    const y = (1 - t) ** 2 * points[0].y + 2 * (1 - t) * t * points[1].y + t ** 2 * points[2].y;
+    const x =
+      (1 - t) ** 2 * pointValues[0].x._value +
+      2 * (1 - t) * t * pointValues[1].x._value +
+      t ** 2 * pointValues[2].x._value;
+    const y =
+      (1 - t) ** 2 * pointValues[0].y._value +
+      2 * (1 - t) * t * pointValues[1].y._value +
+      t ** 2 * pointValues[2].y._value;
     return { x, y };
   };
 
@@ -76,10 +62,8 @@ const SplineScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Svg style={{ flex: 1 }}>
-        {renderSpline()}
-        {renderPoints()}
-      </Svg>
+      {renderSpline()}
+      {renderPoints()}
     </View>
   );
 };
@@ -94,6 +78,17 @@ const styles = StyleSheet.create({
   },
   point: {
     position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'blue',
+  },
+  spline: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderWidth: 2,
+    borderColor: 'red',
   },
 });
 

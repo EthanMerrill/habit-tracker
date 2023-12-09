@@ -1,28 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { StyleSheet, View, Text, PanResponder, Animated } from 'react-native';
 
 const MoodTrackerScreen = () => {
-  const [dragPosition] = useState(new Animated.ValueXY({ x: 0, y: 0 }));
+  const [dragPosition, setDragPosition] = useState(new Animated.ValueXY());
+  const pan = useRef(new Animated.ValueXY()).current;
+
+//   onPanResponderMove: (e, gestureState) => {
+//     setPosition({
+//       x: initialPosition.x + gestureState.dx,
+//       y: initialPosition.y + gestureState.dy,
+//     });
+//   },
+
 
   const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderMove: (event, gesture) => {
-      // Limit dragging to vertical movement
-      Animated.event([null, { dy: dragPosition.y }], {useNativeDriver:false})(event, gesture);
-      console.log('dragPosition.y', dragPosition.y)
-    },
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderMove: Animated.event([
+      null,
+      {
+        dx: pan.x, // x,y are Animated.Value
+        dy: pan.y,
+      },
+    ]),
+     onPanResponderRelease: () => {
+        pan.setOffset({ x: dx, y: dy});
+    //     Animated.spring(
+    //       pan, // Auto-multiplexed
+    //       {toValue: {x: 0, y: 0}, useNativeDriver: true}, // Back to zero
+    //     ).start();
+       },
   });
 
   return (
     <View style={styles.container}>
       <Text style={styles.headerText}>How Are You Doing?</Text>
       <View style={styles.lineContainer}>
-        <View style={styles.line} />
         <Animated.View
           {...panResponder.panHandlers}
           style={[
             styles.circle,
-            { transform: [{ translateY: dragPosition.y }] },
+            pan.getLayout()
           ]}
         />
       </View>
@@ -56,7 +73,6 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     backgroundColor: 'blue',
-    marginLeft: -25,
   },
 });
 
