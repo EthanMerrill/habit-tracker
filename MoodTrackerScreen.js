@@ -14,22 +14,30 @@ const MoodTrackerScreen = () => {
 
 
   const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onPanResponderMove: Animated.event([
-      null,
-      {
-        dx: pan.x, // x,y are Animated.Value
-        dy: pan.y,
-      },
-    ]),
-     onPanResponderRelease: () => {
-        pan.setOffset({ x: dx, y: dy});
-    //     Animated.spring(
-    //       pan, // Auto-multiplexed
-    //       {toValue: {x: 0, y: 0}, useNativeDriver: true}, // Back to zero
-    //     ).start();
-       },
-  });
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderGrant: () => {
+      pan.setOffset({
+        y: pan.y._value,
+        x: 0,
+      });
+    },
+    // fires as much as possible while being dragged
+    onPanResponderMove: Animated.event(
+      [
+        null,
+        { dy: pan.y }
+      ],
+      { useNativeDriver: false }
+    ),
+     onPanResponderRelease: (...args) => {
+       pan.flattenOffset();
+       console.log('onPanResponderRelease', {...args[1]});
+        Animated.spring(pan, {
+          toValue: { x: -120, y: pan.y._value },
+          duration: 1800,
+          useNativeDriver: false
+        }).start();
+  }});
 
   return (
     <View style={styles.container}>
