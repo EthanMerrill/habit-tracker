@@ -4,11 +4,12 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import MoodTrackerScreen from './MoodTrackerScreen'; // Assuming the component file is in the same directory
 import SplineScreen from './SplineScreen';
+import ReanimatedDemo from './ReanimatedDemo';
 
 export default function App() {
   return (
     <View style={styles.container}>
-      <MoodTrackerScreen />
+      <ReanimatedDemo />
     </View>
   );
 }
