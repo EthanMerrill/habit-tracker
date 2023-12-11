@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import React from 'react';
+import React, {useEffect} from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated, {
     useAnimatedStyle,
@@ -8,7 +8,8 @@ import Animated, {
     withDecay,
     withTiming,
     createAnimatedPropAdapter,
-    useAnimatedProps
+    useAnimatedProps,
+    interpolate
 } from 'react-native-reanimated';
 import {
     Gesture,
@@ -21,12 +22,8 @@ export default function ReanimatedDemo() {
     const pressed = useSharedValue(false);
     const offset = useSharedValue(0);
     const xOffset = useSharedValue(0);
-    const width = useSharedValue(0);
-    const { height } = useWindowDimensions();
-
-    const onLayout = (event) => {
-        width.value = event.nativeEvent.layout.width;
-    };
+    //const width = useSharedValue(0);
+    const { height, width } = useWindowDimensions();
 
     const pan = Gesture.Pan()
         .onBegin(() => {
@@ -45,11 +42,7 @@ export default function ReanimatedDemo() {
 
 
             pressed.value = false;
-        });
-
-    const animatedProps = useAnimatedProps(() => ({
-        d: `M0 ${height / 2} L50 ${offset.value+height/2}`
-    }));
+        });    
 
     const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -63,10 +56,14 @@ export default function ReanimatedDemo() {
     }));
 
 
+    const animatedProps = useAnimatedProps(() => ({
+        d: `M0 ${height / 2} C30, ${(height) / 2}, 0, ${offset.value + height / 2}, ${xOffset.value + width / 2}, ${offset.value + height / 2} `
+        //d:`M50 ${height / 2} Q25 ${splineY} 0 ${pathY}`
+    }));
 
     return (<>
         <Svg style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, height: height, width: width }}>
-            <AnimatedPath animatedProps={animatedProps} stroke="black" strokeWidth={8} />
+            <AnimatedPath animatedProps={animatedProps} stroke="black" strokeWidth={12} fill={"transparent"} />
         </Svg>
 
         <GestureHandlerRootView style={styles.container}>
@@ -90,8 +87,8 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     circle: {
-        height: 70,
-        width: 70,
+        height: 50,
+        width: 50,
         backgroundColor: '#b58df1',
         borderRadius: 200,
         cursor: 'grab',
