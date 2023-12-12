@@ -1,6 +1,7 @@
 import 'react-native-gesture-handler';
 import React, { useEffect } from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, useWindowDimensions, Button } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -10,6 +11,7 @@ import Animated, {
     createAnimatedPropAdapter,
     useAnimatedProps,
     interpolate,
+    runOnJS
 } from 'react-native-reanimated';
 import {
     Gesture,
@@ -27,9 +29,16 @@ export default function ReanimatedDemo() {
     //const width = useSharedValue(0);
     const { height, width } = useWindowDimensions();
 
+    // HAPTICS
+    const triggerHaptic = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+        return;
+    };
+
     const pan = Gesture.Pan()
-        .onBegin(() => {
+        .onBegin((_, ctx) => {
             pressed.value = true;
+            triggerHaptic && runOnJS(triggerHaptic)()
         })
         .onChange((event) => {
             offset.value += event.changeY;
@@ -60,27 +69,27 @@ export default function ReanimatedDemo() {
     const boxDrag = Gesture.Pan()
         .onBegin(() => {
             pressed.value = true;
+            //triggerHaptic();
         })
         .onChange((event) => {
-            xOffset.value += event.changeX;
+            if (event.translationX < 0) {
+                boxXOffset.value += event.changeX;
+            }
         })
         .onFinalize((e) => {
-            console.log(e.translationX, e.velocityX);
-            if(e.translationX < -50 && e.velocityX < -300) {
-            boxXOffset.value = withDecay({
-                velocity: 1,
-                rubberBandEffect: true,
-                clamp: [0, boxXOffset.value],
-            });
-        } else {
-            // boxXOffset.value = withDecay({
-            //     velocity: 1,
-            //     rubberBandEffect: true,
-            //     clamp: [boxXOffset.value, 0],
-            // });
-            xOffset.value = withTiming(-150, { duration: 800 });
-            boxXOffset.value = withTiming(-width / 2 + 15, { duration: 1600 });
-        }
+            if (e.translationX < -50 && e.velocityX < -300) {
+                //         boxXOffset.value = withDecay({
+                //             velocity: 1,
+                //             rubberBandEffect: true,
+                //             clamp: [0, boxXOffset.value],
+                // });
+
+                console.log('swipe left');
+            } else {
+                xOffset.value = withTiming(-150, { duration: 800 });
+                boxXOffset.value = withTiming(-width / 2 + 15, { duration: 1600 });
+                console.log('swipe not enough')
+            }
             pressed.value = false;
         });
 
@@ -114,8 +123,12 @@ export default function ReanimatedDemo() {
                     <Animated.View style={[styles.circle, animatedStyles]} />
                 </GestureDetector>
                 <GestureDetector gesture={boxDrag}>
-                    <Animated.View style={[styles.textContainer, animatedBoxStyles]} >
-
+                    <Animated.View style={[styles.textContainer, animatedBoxStyles]}>
+                        <Button
+                            title="Heavy"
+                            onPress={() => {triggerHaptic()}}
+                            
+                        />
                     </Animated.View>
                 </GestureDetector>
 
