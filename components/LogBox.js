@@ -7,13 +7,13 @@ export function LogBox({ x, y, pressed }) {
     console.log(width)
 
     return (
-        <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={300} >
+
         <View
             style={{
                 position: 'absolute',
                 left: x,
                 top: y,
-                width: width - 80,
+                width: width - 20,
                 height: 200,
                 borderRadius: 10,
                 backgroundColor: pressed ? 'blue' : 'gray',
@@ -21,17 +21,33 @@ export function LogBox({ x, y, pressed }) {
                 alignItems: 'center',
             }}
         >
+            <Text style={{
+                position:'absolute', 
+                // transfrom:[translateX-50, rotate(90)]
+            }}>SAVE</Text>
+            <div style={{
+                position:'absolute', 
+                left:'10px',
+                //paddingLeft:'10px',
+                width:width - 80,
+                height:'100%',
+                display:'flex',
+                justifyContent:'center',
+                alignItems:'center'
+            }}>
             <TextInput
                 style={{
                     width: '80%',
-                    height: 'auto',
+                    position: 'absolute',
+                    left:'0',
+                    height: '90%',
                     borderRadius: 5,
                     backgroundColor: 'white',
                     paddingHorizontal: 10,
                 }}
                 placeholder=""
             />
+            </div>
         </View>
-        </KeyboardAvoidingView>
     );
 }
