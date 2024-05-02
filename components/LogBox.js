@@ -1,53 +1,47 @@
 import React from 'react';
-import { View, TextInput, useWindowDimensions, KeyboardAvoidingView } from 'react-native';
+import { View, TextInput, useWindowDimensions, KeyboardAvoidingView, Text} from 'react-native';
 
 export function LogBox({ x, y, pressed }) {
 
-    const { height, width } = useWindowDimensions();
-    console.log(width)
-
-    return (
-
-        <View
-            style={{
-                position: 'absolute',
-                left: x,
-                top: y,
-                width: width - 20,
-                height: 200,
-                borderRadius: 10,
-                backgroundColor: pressed ? 'blue' : 'gray',
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}
-        >
-            <Text style={{
-                position:'absolute', 
-                // transfrom:[translateX-50, rotate(90)]
-            }}>SAVE</Text>
-            <div style={{
-                position:'absolute', 
-                left:'10px',
-                //paddingLeft:'10px',
-                width:width - 80,
+    return (<>
+            <View style={{
+                position:'relative',
                 height:'100%',
                 display:'flex',
                 justifyContent:'center',
-                alignItems:'center'
+                alignItems:'center',
+                backgroundColor:'gray',
+                borderRadius:5,
+                
             }}>
-            <TextInput
+            <TextInput multiline={true}
                 style={{
-                    width: '80%',
-                    position: 'absolute',
-                    left:'0',
+                    position: 'relative',
                     height: '90%',
+                    width: '90%',
                     borderRadius: 5,
                     backgroundColor: 'white',
-                    paddingHorizontal: 10,
+                    textAlignVertical: 'top'
                 }}
-                placeholder=""
             />
-            </div>
-        </View>
+            </View>
+            <View style={{
+                position:'absolute',
+                top:'90%',
+                left:'10%',
+                display:'flex',
+                justifyContent:'center',
+                alignItems:'center',
+                backgroundColor:'gray',
+                borderRadius:5,
+            }}>
+            </View>
+            <View>
+            <Text style={{
+                    color:'gray',
+                    marginHorizontal:"auto"
+                }}>Swipe left to SAVE</Text>
+                </View>
+            </>
     );
 }

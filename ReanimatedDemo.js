@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React, { useEffect } from 'react';
-import { StyleSheet, View, useWindowDimensions, Text } from 'react-native';
+import { StyleSheet, View, useWindowDimensions, Text, PixelRatio } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, {
     useAnimatedStyle,
@@ -23,18 +23,37 @@ import Svg, { Path } from 'react-native-svg';
 // my component imports
 import { LogBox } from './components/LogBox'
 
+// GLOBAL DIMENSIONS
+// circle radius: 
+const circleRadius = 30;
+const boxHeight = 200;
 
 export default function ReanimatedDemo() {
+     // Dimension VARS
+    // Window Dimensions Hook
+    const { width, height } = useWindowDimensions();
+    // get dimensions in pixels
+    const widthPx = PixelRatio.getPixelSizeForLayoutSize(width);
+    const heightPx = PixelRatio.getPixelSizeForLayoutSize(height);
+
+    const boxWidth = widthPx*0.25;
+
+    // set default positions:
+    // box starts off screen
+    const boxOffsetStartXPos = widthPx/2
+
+
     const pressed = useSharedValue(false);
-    const Yoffset = useSharedValue(0);
-    const xOffset = useSharedValue(0);
-    const boxXOffset = useSharedValue(0);
-    const boxYOffset = useSharedValue(0); // THis is used for when the keyboard is open Considered using keyboardAvoidingView but it was hard to isolate to one component.
-    const pathXOffset = useSharedValue(0);
+    const Yposition = useSharedValue(0);
+    const xPosition = useSharedValue(0);
+    const boxXOffset = useSharedValue(boxOffsetStartXPos);
+    const boxYOffset = useSharedValue(0); // This is used for when the keyboard is open Considered using keyboardAvoidingView but it was hard to isolate to one component.
+    const pathXPosition = useSharedValue(0);
     const pathYOffset = useSharedValue(0)
-    const globalOpacity = useSharedValue(1);
+    // const globalOpacity = useSharedValue(1);
+    // const globalVisible = useSharedValue(true);
     //const width = useSharedValue(0);
-    const { height, width } = useWindowDimensions();
+
 
     // HAPTICS
     const triggerHaptic = () => {
@@ -49,14 +68,16 @@ export default function ReanimatedDemo() {
 
     // STATE RESET POSITIONS
     const resetPositions = () => {
-        xOffset.value = 0
-        Yoffset.value = 0
-        boxXOffset.value = 0
+        console.log("resetting positions")
+        xPosition.value = 0
+        Yposition.value = 0
+        boxXOffset.value = boxOffsetStartXPos
         boxYOffset.value = 0
-        pathXOffset.value = 0
-        globalOpacity.value = withTiming(1, {duration: 2000})
+        pathXPosition.value = 0
+        // globalOpacity.value = withTiming(1, {duration: 2000})
+        // globalOpacity.value = 1
+        // globalVisible.value = true
     }
-
 
     // CIRCLE
     const pan = Gesture.Pan()
@@ -66,21 +87,21 @@ export default function ReanimatedDemo() {
         })
         .onChange((event) => {
             // only move if the circle stays on the screen or roughly in the area where the user can drag it. 
-            if (Math.abs(Yoffset.value + event.changeY) < (height / 2) - 50) {
-                Yoffset.value += event.changeY;
+            if (Math.abs(Yposition.value + event.changeY) < (height / 2) - boxHeight/2) {
+                Yposition.value += event.changeY;
             }
-            if (Math.round(Yoffset.value) % 15 == 0) {
+            if (Math.round(Yposition.value) % 15 == 0) {
                 triggerHaptic && runOnJS(triggerHaptic)()
             }
         })
         .onFinalize(() => {
-            Yoffset.value = withDecay({
+            Yposition.value = withDecay({
                 velocity: 1,
                 rubberBandEffect: true,
-                clamp: [0, Yoffset.value],
+                clamp: [0, Yposition.value],
             });
-            xOffset.value = withTiming(-150, { duration: 800 });
-            boxXOffset.value = withTiming(-width / 2 + 15, { duration: 1600 });
+            xPosition.value = withTiming(-width/2+circleRadius+30, { duration: 800 });
+            boxXOffset.value = withTiming(boxWidth/2+circleRadius+30, { duration: 800 });
             pressed.value = false;
             triggerHaptic && runOnJS(triggerHaptic)()
         });
@@ -88,16 +109,15 @@ export default function ReanimatedDemo() {
 
     const animatedCircleStyles = useAnimatedStyle(() => ({
         transform: [
-            { translateY: Yoffset.value },
-            { translateX: xOffset.value },
+            { translateY: Yposition.value },
+            { translateX: xPosition.value },
             { scale: withTiming(pressed.value ? 1.2 : 1) },
         ],
         backgroundColor: pressed.value ? '#FFE04B' : '#b58df1',
-        opacity:globalOpacity.value
+        // opacity:globalOpacity.value
     }));
 
     // BOX
-
     const boxDrag = Gesture.Pan()
         .onBegin(() => {
             pressed.value = true;
@@ -105,9 +125,9 @@ export default function ReanimatedDemo() {
         })
         .onChange((event) => {
             if (event.translationX < 0) {
-                xOffset.value += event.changeX;
-                pathXOffset.value += event.changeX;
-                if (xOffset.value < -240 && xOffset.value > -250) {
+                xPosition.value += event.changeX;
+                pathXPosition.value += event.changeX;
+                if (xPosition.value < -240 && xPosition.value > -250) {
                     console.log('swipe left');
                     pressed.value = false;
                     triggerHapticHeavy && runOnJS(triggerHapticHeavy)()
@@ -115,7 +135,7 @@ export default function ReanimatedDemo() {
             }
         })
         .onFinalize((e) => {
-
+            // if the user swipes left and the box is far enough to the left, then save the point to the database
             if (e.translationX < -90) {
                 boxXOffset.value = withDecay({
                     velocity: 1,
@@ -124,37 +144,36 @@ export default function ReanimatedDemo() {
                 });
                 triggerHaptic && runOnJS(triggerHaptic)()
                 console.log('swipe left. Hide Objects, Reset Positions, Then fade in. ');
-                globalOpacity.value = 0
-                // SAVE POINT TO DATABSE HERE 
-                pathYOffset.value = Yoffset.value// Placeholder to accomplish the same thing
-                resetPositions()
+                // globalOpacity.value = 0
+                // SAVE POINT TO DATABASE HERE 
+                // pathYOffset.value = Yposition.value// Placeholder to accomplish the same thing
+                runOnJS(resetPositions)()
             } else {
-                xOffset.value = withTiming(-150, { duration: 300 });
-                boxXOffset.value = withTiming(-width / 2 + 15, { duration: 300 });
-                console.log('swipe not enough', height, Yoffset.value)
+                // xPosition.value = withTiming(-120, { duration: 800 });
+                //boxXOffset.value = withTiming(-width / 2 + 15, { duration: 300 });
+                console.log('swipe not enough', height, Yposition.value)
             }
             pressed.value = false;
         });
 
-
+    // the BOX styles
     const animatedBoxStyles = useAnimatedStyle(() => ({
         transform: [
-            { translateY: Yoffset.value + boxYOffset.value },
-            { translateX: xOffset.value + boxXOffset.value },
+            { translateY: Yposition.value + boxYOffset.value },
+            { translateX: xPosition.value + boxXOffset.value },
             //{ scale: withTiming(pressed.value ? 1.2 : 1) },
         ],
-        width: width - 80,
-        right: -width - (width - 120) / 2,
-        backgroundColor: pressed.value ? '#FFE04B' : '#b58df1',
-        opacity:globalOpacity.value
+        width: boxWidth,
+        //backgroundColor: pressed.value ? '#FFE04B' : '#b58df1',
+        // opacity:globalOpacity.value
+        // visible: globalVisible.value
     }));
 
     // PATH
     const AnimatedPath = Animated.createAnimatedComponent(Path);
 
     const animatedProps = useAnimatedProps(() => ({
-        d: `M${pathXOffset.value} ${pathYOffset.value + height / 2} C30, ${pathYOffset.value + height / 2}, ${pathXOffset.value}, ${Yoffset.value + height / 2}, ${(xOffset.value + width / 2) - 25}, ${Yoffset.value + height / 2}`,
-        opacity:globalOpacity.value
+        d: `M${pathXPosition.value} ${pathYOffset.value + height / 2} C${30}, ${pathYOffset.value + height / 2}, ${pathXPosition.value}, ${Yposition.value + height / 2}, ${(xPosition.value + width / 2) - 15}, ${Yposition.value + height / 2}`,
     }));
 
 
@@ -162,19 +181,19 @@ export default function ReanimatedDemo() {
         <Svg style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, height: height, width: width }}>
             <AnimatedPath animatedProps={animatedProps} stroke="grey" strokeWidth={6} fill={"transparent"} />
         </Svg>
-            <div
+            <View
             style={{
                 position:'absolute',
                 top:'20%'
-            }}><Text>How you you feel right now?</Text></div>
+            }}><Text>How do you feel right now?</Text></View>
         <GestureHandlerRootView style={styles.container}>
             <View style={styles.container}>
                 <GestureDetector gesture={pan}>
                     <Animated.View style={[styles.circle, animatedCircleStyles]} />
                 </GestureDetector>
                 <GestureDetector gesture={boxDrag}>
-                        <Animated.View style={[styles.textContainer, animatedBoxStyles]}>
-                            <LogBox params={{ x: xOffset, y: Yoffset, pressed: pressed }} />
+                        <Animated.View style={[styles.box, animatedBoxStyles]}>
+                            <LogBox params={{ x: xPosition, y: Yposition, pressed: pressed }} />
                         </Animated.View>
                 </GestureDetector>
             </View>
@@ -189,20 +208,22 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         height: '100%',
+        flexDirection: 'row',
     },
     circle: {
-        height: 50,
-        width: 50,
+        height: circleRadius*2,
+        width: circleRadius*2,
         backgroundColor: '#b58df1',
         borderRadius: 200,
         cursor: 'grab',
     },
-    textContainer: {
+    box: {
         position: 'absolute',
-        marginLeft: 0,
-        height: 200,
+        // marginLeft: 10,
+        height: boxHeight,
         backgroundColor: 'violet',
         borderTopLeftRadius: 20,
         borderBottomLeftRadius: 20,
+        // width: '60%',
     },
 });
