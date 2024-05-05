@@ -11,7 +11,7 @@ export function LogBox({ x, y, pressed }) {
                 justifyContent:'center',
                 alignItems:'center',
                 backgroundColor:'gray',
-                borderRadius:5,
+                // borderRadius:5,
                 
             }}>
             <TextInput multiline={true}
