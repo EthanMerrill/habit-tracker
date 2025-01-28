@@ -41,7 +41,7 @@ export default function ReanimatedDemo() {
     const widthPx = PixelRatio.getPixelSizeForLayoutSize(width);
     const heightPx = PixelRatio.getPixelSizeForLayoutSize(height);
     
-    const boxWidth = widthPx * 0.25;
+    const boxWidth = width * 0.5;
 
     // set default positions:
     // box starts off screen
@@ -81,9 +81,7 @@ export default function ReanimatedDemo() {
         boxXOffset.value = boxOffsetStartXPos
         boxYOffset.value = 0
         pathXPosition.value = 0
-        // globalOpacity.value = withTiming(1, {duration: 2000})
-        // globalOpacity.value = 1
-        // globalVisible.value = true
+        updateMoodValue(50)
     }
 
     // mood value Setter
@@ -118,8 +116,8 @@ export default function ReanimatedDemo() {
             boxXOffset.value = withTiming(boxWidth / 2 + circleRadius + 30, { duration: 800 });
             pressed.value = false;
 
-
             console.log("Yposition: ", Yposition.value,"\ncalculated Max:",height-boxHeight, "\ncalculated min", -(height-boxHeight)/2, "\nCalculation: ", -1*(Yposition.value < 0 ? (Yposition.value) * 2 : Yposition.value))
+
             // convert the Y position to a percentage of the range of movement it has availble, while accounting for box height
             runOnJS(updateMoodValue)(interpolate(-1*(Yposition.value < 0 ? (Yposition.value) * 2 : Yposition.value), [-(height-boxHeight)/2, height-boxHeight], [0, 100]));
             Platform.OS !== 'web' && triggerHaptic && runOnJS(triggerHaptic)()
@@ -164,10 +162,11 @@ export default function ReanimatedDemo() {
                     rubberBandEffect: true,
                     clamp: [0, -500],
                 });
-                triggerHaptic && runOnJS(triggerHaptic)()
+                Platform.OS !== 'web' && triggerHaptic && runOnJS(triggerHaptic)()
                 console.log('swipe left. Hide Objects, Reset Positions, Then fade in. ');
                 // globalOpacity.value = 0
                 // SAVE POINT TO DATABASE HERE 
+                console.log("Pathyoffset: ", pathYOffset.value, "\nYpositionVal: ", Yposition.value)
                 pathYOffset.value = Yposition.value// Placeholder so set the height of the base of the line on the left to the value of the previous saved item.
                 runOnJS(resetPositions)()
             } else {
@@ -211,9 +210,11 @@ export default function ReanimatedDemo() {
             <View style={styles.container}>
                 <GestureDetector gesture={pan}>
                     <Animated.View style={[styles.circle, animatedCircleStyles]}>
-                        <Text>
+                        <View style={styles.moodvalueContainer}>
+                        <Text style={styles.moodValue}>
                             {moodValue.toFixed(0)}
                         </Text>
+                        </View>
                     </Animated.View>
                 </GestureDetector>
                 <GestureDetector gesture={boxDrag}>
@@ -241,6 +242,17 @@ const styles = StyleSheet.create({
         backgroundColor: '#b58df1',
         borderRadius: 200,
         cursor: 'grab',
+    },
+    moodValue: {
+        fontSize: 30,
+        fontWeight: 'bold',
+        color: 'white',
+    },
+    moodvalueContainer: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height:"100%"
     },
     box: {
         position: 'absolute',
