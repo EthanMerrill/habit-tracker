@@ -5,26 +5,47 @@
     "start": "expo start --dev-client",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:fix": "eslint 'src/**/*.{js,jsx,ts,tsx}' --fix"
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.1",
-    "@react-native-firebase/app": "^21.7.1",
-    "@react-native-firebase/auth": "^21.7.1",
+    "@react-native-community/cli": "latest",
+    "@react-navigation/native": "^7.0.14",
+    "@react-navigation/stack": "^7.1.1",
+    "babel-preset-expo": "^12.0.6",
     "expo": "~52.0.28",
+    "expo-build-properties": "~0.13.2",
+    "expo-constants": "^17.0.5",
     "expo-haptics": "~14.0.1",
     "expo-status-bar": "~2.0.1",
+    "firebase": "^11.2.0",
     "react": "18.3.1",
     "react-dom": "18.2.0",
     "react-native": "0.76.6",
+    "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "^2.22.1",
     "react-native-reanimated": "~3.16.7",
+    "react-native-safe-area-context": "^5.1.0",
+    "react-native-screens": "^4.6.0",
     "react-native-svg": "^15.11.1",
-    "react-native-web": "~0.19.13",
-    "expo-build-properties": "~0.13.2"
+    "react-native-web": "~0.19.13"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.7"
+    "@babel/core": "^7.26.7",
+    "@types/firebase": "^2.4.32",
+    "@types/react": "~18.3.12",
+    "@typescript-eslint/eslint-plugin": "^8.22.0",
+    "@typescript-eslint/parser": "^8.22.0",
+    "eslint": "^9.19.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-prettier": "^5.2.3",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.3.3"
   },
   "private": true
 }
